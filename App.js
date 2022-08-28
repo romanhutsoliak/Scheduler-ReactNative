@@ -1,8 +1,11 @@
 import * as Device from 'expo-device';
+import * as Application from 'expo-application';
 import * as Notifications from 'expo-notifications';
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, SafeAreaView, Platform, BackHandler } from 'react-native';
 import { WebView } from 'react-native-webview';
+import * as SecureStore from 'expo-secure-store';
+import { v4 as uuid_v4 } from 'uuid';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -14,7 +17,6 @@ Notifications.setNotificationHandler({
 
 export default function App() {
   const [expoPushToken, setExpoPushToken] = useState('');
-  const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
   const lastNotificationResponse = Notifications.useLastNotificationResponse();
@@ -44,9 +46,31 @@ export default function App() {
   }, [lastNotificationResponse]);
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then((token) =>
-      setExpoPushToken(token)
-    );
+    registerForPushNotificationsAsync().then(async (token) => {
+      setExpoPushToken(token);
+
+      // Send the token to server
+      const deviceId = await getDeviceId();
+      const userDevice = {
+        deviceId: deviceId,
+        platform: Platform.OS,
+        manufacturer: Device.manufacturer,
+        model: Device.deviceName,
+        appVersion: '1.0.0',
+        notificationToken: token
+      };
+
+      webViewRef.current.injectJavaScript(
+        `
+        setTimeout(function() { 
+          window.sendUserDevice('` +
+          JSON.stringify(userDevice) +
+          `');
+         }, 10);
+        true; // note: this is required, or you'll sometimes get silent failures
+      `
+      );
+    });
 
     BackHandler.addEventListener('hardwareBackPress', handleBackButtonPress);
 
@@ -84,10 +108,17 @@ export default function App() {
     };
   }, []);
 
-  // <Text>Your expo push token: {expoPushToken}</Text>
   return (
     <SafeAreaView style={styles.container}>
-      <WebView source={{ uri: 'http://192.168.1.3:3003' }} ref={webViewRef} />
+      <WebView
+        source={{ uri: 'http://192.168.1.3:3003' }}
+        ref={webViewRef}
+        onMessage={(event) => {}}
+        startInLoadingState={true}
+        javaScriptEnabled={true}
+        javaScriptEnabledAndroid={true}
+        originWhitelist={['*']}
+      />
     </SafeAreaView>
   );
 }
@@ -114,7 +145,6 @@ async function registerForPushNotificationsAsync() {
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync()).data;
-    console.log(token);
   } else {
     alert('Must use physical device for Push Notifications');
   }
@@ -130,3 +160,18 @@ async function registerForPushNotificationsAsync() {
 
   return token;
 }
+
+const getDeviceId = async () => {
+  if (Platform.OS === 'android') {
+    return Application.androidId;
+  } else {
+    let deviceId = await SecureStore.getItemAsync('deviceId');
+
+    if (!deviceId) {
+      deviceId = Constants.deviceId ?? uuid_v4();
+      await SecureStore.setItemAsync('deviceId', deviceId);
+    }
+
+    return deviceId;
+  }
+};

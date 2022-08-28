@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Schedule periodical tasks",
+    "name": "Schedule periodic tasks",
     "slug": "Make_your_routine_memorized",
     "version": "0.1.0",
     "orientation": "portrait",
@@ -15,6 +15,9 @@
       "fallbackToCacheTimeout": 0
     },
     "assetBundlePatterns": ["**/*"],
+    "androidStatusBar": {
+      "backgroundColor": "#000000"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.hutsoliak.scheduler",

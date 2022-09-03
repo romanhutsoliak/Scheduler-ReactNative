@@ -1,6 +1,7 @@
 import * as Device from 'expo-device';
 import * as Application from 'expo-application';
 import * as Notifications from 'expo-notifications';
+import { locale } from 'expo-localization';
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, SafeAreaView, Platform, BackHandler } from 'react-native';
 import { WebView } from 'react-native-webview';
@@ -57,7 +58,8 @@ export default function App() {
         manufacturer: Device.manufacturer,
         model: Device.deviceName,
         appVersion: '1.0.0',
-        notificationToken: token
+        notificationToken: token,
+        locale: locale
       };
 
       webViewRef.current.injectJavaScript(
@@ -66,7 +68,7 @@ export default function App() {
           window.sendUserDevice('` +
           JSON.stringify(userDevice) +
           `');
-         }, 10);
+         }, 50);
         true; // note: this is required, or you'll sometimes get silent failures
       `
       );
@@ -113,7 +115,10 @@ export default function App() {
       <WebView
         source={{ uri: 'http://192.168.1.3:3003' }}
         ref={webViewRef}
-        onMessage={(event) => {}}
+        onMessage={(event) => {
+          // Debug react web code in native console
+          console.log(event.nativeEvent.data);
+        }}
         startInLoadingState={true}
         javaScriptEnabled={true}
         javaScriptEnabledAndroid={true}

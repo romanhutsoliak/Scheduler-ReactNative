@@ -2,7 +2,7 @@ import * as Device from 'expo-device';
 import * as Application from 'expo-application';
 import * as Notifications from 'expo-notifications';
 import { locale } from 'expo-localization';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, SafeAreaView, Platform, BackHandler } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as SecureStore from 'expo-secure-store';
@@ -11,17 +11,16 @@ import { v4 as uuid_v4 } from 'uuid';
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false
+    shouldPlaySound: true,
+    shouldSetBadge: true
   })
 });
 
 export default function App() {
-  const [expoPushToken, setExpoPushToken] = useState('');
   const notificationListener = useRef();
   const responseListener = useRef();
   const lastNotificationResponse = Notifications.useLastNotificationResponse();
-  // const [lastNotificationObject, setLastNotificationObject] = useState();
+  const [userDevice, setUserDevice] = useState(null);
 
   const webViewRef = useRef();
 
@@ -47,31 +46,17 @@ export default function App() {
   }, [lastNotificationResponse]);
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then(async (token) => {
-      setExpoPushToken(token);
+    // don't show webview until we have user device
+    getUserDeviceData().then((userDeviceData) => {
+      setUserDevice(userDeviceData);
+    });
 
-      // Send the token to server
-      const deviceId = await getDeviceId();
-      const userDevice = {
-        deviceId: deviceId,
-        platform: Platform.OS,
-        manufacturer: Device.manufacturer,
-        model: Device.deviceName,
-        appVersion: '1.0.0',
-        notificationToken: token,
-        locale: locale
-      };
-
-      webViewRef.current.injectJavaScript(
-        `
-        setTimeout(function() { 
-          window.sendUserDevice('` +
-          JSON.stringify(userDevice) +
-          `');
-         }, 50);
-        true; // note: this is required, or you'll sometimes get silent failures
-      `
-      );
+    registerForPushNotificationsAsync().then((token) => {
+      // Send the token to react
+      webViewRef.current.injectJavaScript(`
+        window.dispatchEvent(new CustomEvent("message_from_react_native", {detail: {action: "notificationToken", data: "${token}"}}));
+        true; 
+      `);
     });
 
     BackHandler.addEventListener('hardwareBackPress', handleBackButtonPress);
@@ -110,10 +95,10 @@ export default function App() {
     };
   }, []);
 
-  return (
+  return userDevice ? (
     <SafeAreaView style={styles.container}>
       <WebView
-        source={{ uri: 'http://192.168.1.3:3003' }}
+        source={{ uri: 'http://192.168.1.3:3003/' }}
         ref={webViewRef}
         onMessage={(event) => {
           // Debug react web code in native console
@@ -123,8 +108,19 @@ export default function App() {
         javaScriptEnabled={true}
         javaScriptEnabledAndroid={true}
         originWhitelist={['*']}
+        injectedJavaScriptBeforeContentLoaded={
+          `
+          window.isNativeApp = true;
+          window.userDevice = ` +
+          JSON.stringify(userDevice) +
+          `;
+          true;
+        `
+        }
       />
     </SafeAreaView>
+  ) : (
+    <></>
   );
 }
 
@@ -166,17 +162,24 @@ async function registerForPushNotificationsAsync() {
   return token;
 }
 
-const getDeviceId = async () => {
+async function getUserDeviceData() {
+  let deviceId = '';
   if (Platform.OS === 'android') {
-    return Application.androidId;
+    deviceId = Application.androidId;
   } else {
-    let deviceId = await SecureStore.getItemAsync('deviceId');
+    deviceId = await SecureStore.getItemAsync('deviceId');
 
     if (!deviceId) {
       deviceId = Constants.deviceId ?? uuid_v4();
       await SecureStore.setItemAsync('deviceId', deviceId);
     }
-
-    return deviceId;
   }
-};
+  return {
+    deviceId: deviceId,
+    platform: Platform.OS,
+    manufacturer: Device.manufacturer,
+    model: Device.deviceName,
+    appVersion: '1.0.0',
+    locale: locale
+  };
+}

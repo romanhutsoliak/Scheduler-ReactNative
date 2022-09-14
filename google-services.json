@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1032987613535",
+    "project_id": "scheduler-1a2ac",
+    "storage_bucket": "scheduler-1a2ac.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1032987613535:android:783ebfcf2fa171020afeea",
+        "android_client_info": {
+          "package_name": "com.hutsoliak.scheduler_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1032987613535-mmvrtf0bo34h2c0vlrv6794afhis4em4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGHMLmaADOM1o0KO18Ye4V4krAVX31NYk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1032987613535-mmvrtf0bo34h2c0vlrv6794afhis4em4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

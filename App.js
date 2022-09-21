@@ -98,7 +98,12 @@ export default function App() {
   return userDevice ? (
     <SafeAreaView style={styles.container}>
       <WebView
-        source={{ uri: 'http://192.168.1.3:3003/' }}
+        source={{
+          uri:
+            process.env.WEBVIEW_URL != undefined
+              ? process.env.WEBVIEW_URL
+              : 'http://192.168.1.3:3003'
+        }}
         ref={webViewRef}
         onMessage={(event) => {
           // Debug react web code in native console

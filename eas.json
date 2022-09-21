@@ -3,18 +3,26 @@
     "version": ">= 2.0.0"
   },
   "build": {
-    "production": {},
+    "production": {
+      "env": {
+        "WEBVIEW_URL": "https://app.periodicschedule.com"
+      }
+    },
     "preview": {
-      "extends": "production",
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "WEBVIEW_URL": "https://app.periodicschedule.com"
       }
     },
     "development": {
-      "extends": "preview",
       "developmentClient": "true",
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "WEBVIEW_URL": "https://app.periodicschedule.com"
+      }
     }
   },
   "submit": {

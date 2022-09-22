@@ -1,6 +1,7 @@
 import * as Device from 'expo-device';
 import * as Application from 'expo-application';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { locale } from 'expo-localization';
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, SafeAreaView, Platform, BackHandler } from 'react-native';
@@ -95,14 +96,16 @@ export default function App() {
     };
   }, []);
 
+  const webviewUrl =
+    Constants.manifest?.extra?.WEBVIEW_URL ||
+    process.env.WEBVIEW_URL ||
+    'http://192.168.1.3:3003';
+
   return userDevice ? (
     <SafeAreaView style={styles.container}>
       <WebView
         source={{
-          uri:
-            process.env.WEBVIEW_URL != undefined
-              ? process.env.WEBVIEW_URL
-              : 'http://192.168.1.3:3003'
+          uri: webviewUrl
         }}
         ref={webViewRef}
         onMessage={(event) => {

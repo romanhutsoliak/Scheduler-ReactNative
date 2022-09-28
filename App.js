@@ -54,10 +54,12 @@ export default function App() {
 
     registerForPushNotificationsAsync().then((token) => {
       // Send the token to react
-      webViewRef.current.injectJavaScript(`
-        window.dispatchEvent(new CustomEvent("message_from_react_native", {detail: {action: "notificationToken", data: "${token}"}}));
-        true; 
-      `);
+      setTimeout(() => {
+        webViewRef.current.injectJavaScript(`
+          window.dispatchEvent(new CustomEvent("message_from_react_native", {detail: {action: "notificationToken", data: "${token}"}}));
+          true; 
+        `);
+      }, 500);
     });
 
     BackHandler.addEventListener('hardwareBackPress', handleBackButtonPress);

@@ -103,41 +103,43 @@ export default function App() {
     process.env.WEBVIEW_URL ||
     'http://192.168.1.3:3003';
 
-  return userDevice ? (
+  return (
     <SafeAreaView style={styles.container}>
-      <WebView
-        source={{
-          uri: webviewUrl
-        }}
-        ref={webViewRef}
-        onMessage={(event) => {
-          // Debug react web code in native console
-          console.log(event.nativeEvent.data);
-        }}
-        startInLoadingState={true}
-        javaScriptEnabled={true}
-        javaScriptEnabledAndroid={true}
-        originWhitelist={['*']}
-        injectedJavaScriptBeforeContentLoaded={
-          `
+      {userDevice ? (
+        <WebView
+          source={{
+            uri: webviewUrl
+          }}
+          ref={webViewRef}
+          onMessage={(event) => {
+            // Debug react web code in native console
+            console.log(event.nativeEvent.data);
+          }}
+          startInLoadingState={true}
+          javaScriptEnabled={true}
+          javaScriptEnabledAndroid={true}
+          originWhitelist={['*']}
+          injectedJavaScriptBeforeContentLoaded={
+            `
           window.isNativeApp = true;
           window.userDevice = ` +
-          JSON.stringify(userDevice) +
-          `;
+            JSON.stringify(userDevice) +
+            `;
           true;
-        `
-        }
-      />
+          `
+          }
+          cacheEnabled={false}
+        />
+      ) : (
+        <></>
+      )}
     </SafeAreaView>
-  ) : (
-    <></>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    marginTop: 30
+    flex: 1
   }
 });
 

@@ -12,7 +12,8 @@ export default {
       backgroundColor: '#ffffff'
     },
     updates: {
-      fallbackToCacheTimeout: 0
+      fallbackToCacheTimeout: 0,
+      url: 'https://u.expo.dev/d3ebba24-5329-44c8-9da8-3f690347d755'
     },
     assetBundlePatterns: ['**/*'],
     androidStatusBar: {
@@ -43,9 +44,6 @@ export default {
     },
     runtimeVersion: {
       policy: 'sdkVersion'
-    },
-    updates: {
-      url: 'https://u.expo.dev/d3ebba24-5329-44c8-9da8-3f690347d755'
     }
   }
 };

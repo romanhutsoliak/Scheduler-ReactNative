@@ -4,10 +4,17 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { locale } from 'expo-localization';
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, SafeAreaView, Platform, BackHandler } from 'react-native';
+import {
+  StyleSheet,
+  SafeAreaView,
+  Platform,
+  BackHandler,
+  Linking
+} from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as SecureStore from 'expo-secure-store';
 import { v4 as uuid_v4 } from 'uuid';
+import { Subscription } from 'expo-modules-core';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -18,19 +25,16 @@ Notifications.setNotificationHandler({
 });
 
 export default function App() {
-  const notificationListener = useRef();
-  const responseListener = useRef();
+  const notificationListener = useRef<Subscription>(null);
+  const responseListener = useRef<Subscription>(null);
   const lastNotificationResponse = Notifications.useLastNotificationResponse();
   const [userDevice, setUserDevice] = useState(null);
 
-  const webViewRef = useRef();
+  const webViewRef = useRef(null);
 
   const handleBackButtonPress = () => {
-    try {
-      webViewRef.current?.goBack();
-    } catch (err) {
-      console.log('[handleBackButtonPress] Error : ', err.message);
-    }
+    webViewRef?.current?.goBack();
+    return true;
   };
 
   useEffect(() => {
@@ -41,7 +45,7 @@ export default function App() {
         Notifications.DEFAULT_ACTION_IDENTIFIER
     ) {
       Linking.openURL(
-        lastNotificationResponse.notification.request.content.data.url
+        lastNotificationResponse.notification.request.content.data.url as string
       );
     }
   }, [lastNotificationResponse]);
